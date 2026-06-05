@@ -136,7 +136,7 @@ class Colony {
 
     let consumption = 0
     for (const ant of this.ants) {
-      consumption += FOOD_CONSUME_PER_ANT * scaledDt * 0.001
+      consumption += FOOD_CONSUME_PER_ANT * scaledDt
     }
     this.food = Math.max(0, this.food - consumption)
 
@@ -303,8 +303,8 @@ class Colony {
         if (ant.state === AntState.FIGHTING || ant.type === AntType.SOLDIER) {
           const dist = distance(ant.x, ant.y, enemy.x, enemy.y)
           if (dist < 20) {
-            enemy.health -= ant.attack * dt * 0.001
-            ant.health -= enemy.attack * dt * 0.001
+            enemy.health -= ant.attack * dt
+            ant.health -= enemy.attack * dt
             if (enemy.health <= 0) {
               this.addEvent(`Enemy ${enemy.type} defeated!`, 'success')
             }

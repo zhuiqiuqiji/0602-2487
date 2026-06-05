@@ -11,7 +11,7 @@ export const PUPA_DURATION = 45000
 export const FOOD_CONSUME_PER_ANT = 0.02
 export const WORKER_SPEED = 1.2
 export const SOLDIER_SPEED = 0.8
-export const ANT_HUNGER_RATE = 0.01
+export const ANT_HUNGER_RATE = 0.3
 export const ANT_EAT_AMOUNT = 10
 export const HUNGER_THRESHOLD = 70
 

@@ -74,14 +74,6 @@ class AntImpl implements Ant {
       this.health -= 0.05 * dt
     }
 
-    if (this.carrying) {
-      const dist = distance(this.x, this.y, this.targetX, this.targetY)
-      if (dist < 2) {
-        this.carrying = false
-        this.carryingFood = 0
-      }
-    }
-
     const result = moveTowards(this.x, this.y, this.targetX, this.targetY, this.speed, dt)
     this.x = result.x
     this.y = result.y
