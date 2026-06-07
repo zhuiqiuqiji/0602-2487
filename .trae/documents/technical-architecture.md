@@ -6,31 +6,46 @@ flowchart TD
         A["Vue3 组件层"] --> B["Canvas 渲染引擎"]
         A --> C["状态面板 UI"]
         A --> D["交互控制层"]
+        A --> E["新增UI组件（基因/建造/季节/对战）"]
     end
 
     subgraph "游戏逻辑层"
-        E["游戏主循环 (GameLoop)"]
-        F["蚂蚁AI系统"]
-        G["资源管理器"]
-        H["战斗系统"]
-        I["繁殖系统"]
-        J["地图/巢穴生成器"]
+        F["游戏主循环 (GameLoop)"]
+        G["蚂蚁AI系统（信息素增强）"]
+        H["资源管理器（食物/水/材料）"]
+        I["战斗系统"]
+        J["繁殖进化系统"]
+        K["地图/巢穴生成器（多生物群落）"]
+        L["季节灾害系统"]
+        M["信息素系统"]
+        N["基因进化系统"]
+        O["蚁巢建造系统"]
+        P["对战管理器"]
     end
 
     subgraph "数据层"
-        K["Pinia 状态仓库"]
-        L["游戏配置数据"]
+        Q["Pinia 状态仓库（扩展）"]
+        R["游戏配置数据（扩展）"]
+        S["生物群落数据"]
+        T["房间类型数据"]
     end
 
-    D --> E
-    E --> F
-    E --> G
-    E --> H
-    E --> I
-    E --> J
-    B --> E
-    K --> A
-    L --> E
+    D --> F
+    F --> G
+    F --> H
+    F --> I
+    F --> J
+    F --> K
+    F --> L
+    F --> M
+    F --> N
+    F --> O
+    F --> P
+    B --> F
+    Q --> A
+    R --> F
+    S --> K
+    T --> O
 ```
 
 ## 2. 技术说明
@@ -42,147 +57,292 @@ flowchart TD
 - **渲染引擎**：HTML5 Canvas 2D（游戏画面渲染）
 - **动画库**：requestAnimationFrame 原生游戏循环
 - **无后端**：纯前端单机游戏，数据存储在内存中
+- **对战模式**：本地双人轮流操作或分屏操作
 
 ## 3. 路由定义
 
 | 路由 | 用途 |
 |------|------|
-| `/` | 游戏主页面，包含游戏画布和状态面板 |
+| `/` | 游戏主菜单（模式选择、生物群落选择） |
+| `/game` | 游戏主页面，包含游戏画布和状态面板 |
+| `/battle` | 对战模式页面，双人分屏 |
 
-## 4. 核心系统设计
+## 4. 核心系统设计（V2.0 新增）
 
-### 4.1 游戏主循环 (GameLoop)
+### 4.1 信息素系统 (PheromoneSystem)
 
+**数据结构**：
+- 网格化信息素地图，每格存储3种信息素浓度（觅食/警戒/归巢）
+- 浓度范围 0.0-1.0，随时间自然衰减（0.005/秒）
+- 蚂蚁移动时释放信息素，浓度随距离衰减
+
+**算法**：
 ```
-requestAnimationFrame 驱动
-  → 更新时间步长（支持暂停/倍速）
-  → 更新蚂蚁AI状态
-  → 更新资源消耗
-  → 检查事件触发（外敌入侵、繁殖等）
-  → 渲染Canvas画面
-  → 更新UI状态面板
+蚂蚁发现食物 → 沿途释放觅食信息素（浓度=0.8）
+其他蚂蚁感知范围内信息素 → 向浓度最高方向移动
+到达食物源 → 强化信息素浓度（+0.2）
+食物耗尽 → 信息素自然衰减 → 路径逐渐消失
 ```
 
-### 4.2 蚂蚁AI系统
+**优化策略**：
+- 信息素地图仅更新变化区域，避免全网格遍历
+- 使用邻域扩散算法模拟信息素自然扩散
+- 可开关可视化，关闭时不渲染但逻辑仍运行
 
-蚂蚁行为优先级（从高到低）：
-1. **紧急防御**：外敌入侵时兵蚁自动响应
-2. **饥饿进食**：自身饥饿值过高时前往仓库进食
-3. **玩家指令**：玩家指定的任务
-4. **自动任务**：根据蚁群需求自动分配（觅食/挖掘/照顾幼蚁）
+### 4.2 季节与灾害系统 (SeasonSystem)
 
-蚂蚁类型：
-| 类型 | 职责 | 属性侧重 |
-|------|------|---------|
-| 蚁后 | 产卵繁殖 | 不移动，高生命值 |
-| 工蚁 | 觅食、挖掘、照顾幼蚁 | 高速度，中等载重 |
-| 兵蚁 | 巡逻、防御外敌 | 高攻击力，高生命值 |
-| 幼蚁 | 成长中，无行为 | 需要工蚁喂食照顾 |
+**季节循环**：
+- 每季节持续 2 分钟（游戏时间，可加速）
+- 季节转换过渡动画 10 秒
+- 季节效果：
+  - 春季：繁殖速度 +30%，食物产出 +20%，洪水风险
+  - 夏季：蚂蚁速度 +20%，食物产出 -10%，干旱风险
+  - 秋季：食物产出 +40%，繁殖蚁婚飞，繁殖速度 +50%
+  - 冬季：蚂蚁速度 -40%，食物消耗 -50%，暴风雪风险
 
-### 4.3 地图系统
+**灾害触发**：
+- 每季节开始时随机判定是否发生灾害
+- 提前 3 天（游戏时间）预警
+- 灾害持续 10-20 秒
+- 效果计算基于蚁群状态（是否有蓄水池/抗病基因等）
 
-**地下巢穴**：
-- 网格化地图（每格代表一个可挖掘单位）
-- 预设初始巢穴结构（蚁后室 + 1条隧道 + 1个育儿室）
-- 墙壁可被工蚁挖掘，形成新通道和房间
-- 巢穴温度/湿度影响繁殖效率
+### 4.3 基因进化系统 (GeneSystem)
 
-**地面世界**：
-- 开放式地图，随机生成食物源
-- 食物源类型：树叶（少量食物）、果实（中量食物）、死虫（大量食物）
-- 外敌从地图边缘出现
-- 巢穴入口连接地下与地面
+**基因属性**：
+| 基因 | 效果 | 每级提升 | 满级 |
+|-----|------|---------|------|
+| 速度 | 蚂蚁移动速度 | +10% | Lv10 |
+| 力量 | 蚂蚁攻击力/防御力 | +15% | Lv10 |
+| 抗病 | 疾病抵抗力 | +20% | Lv10 |
+| 载重 | 工蚁携带食物量 | +10% | Lv10 |
+| 繁殖 | 蚁后产卵速度 | +15% | Lv10 |
 
-### 4.4 战斗系统
+**进化机制**：
+- 每次新蚂蚁孵化获得 1 基因点
+- 消耗基因点和食物升级属性
+- 升级后所有新生蚂蚁获得属性加成
+- 满级后解锁特殊变异（如：飞行工蚁、巨型兵蚁）
 
-- 外敌类型：蜘蛛（高攻击）、敌对蚁群（数量多）
-- 战斗为自动进行，蚂蚁接触敌人后根据攻击力/生命值计算伤害
-- 玩家可通过指挥更多蚂蚁增援
-- 战斗失败则参战蚂蚁死亡，敌人进入巢穴破坏
+### 4.4 蚁巢建造系统 (BuildSystem)
 
-### 4.5 繁殖系统
+**房间类型数据**：
+```typescript
+interface RoomType {
+  id: string
+  name: string
+  description: string
+  size: { width: number, height: number }
+  cost: { material: number, food: number }
+  unlockCondition: { antCount?: number, geneLevel?: number }
+  effects: {
+    foodCapacity?: number
+    waterCapacity?: number
+    reproductionBonus?: number
+    attackBonus?: number
+    foodProduction?: number
+    diseaseResist?: number
+  }
+}
+```
 
-- 蚁后每隔一定游戏时间产下一枚卵
-- 卵需要在育儿室由工蚁照顾
-- 生命周期：卵(30s) → 幼虫(60s) → 蛹(45s) → 成蚁（随机工蚁/兵蚁）
-- 食物充足时繁殖速度加快，食物不足时蚁后停止产卵
+**建造流程**：
+1. 玩家选择房间类型 → 系统检查解锁条件和资源
+2. 进入建造预览模式，鼠标移动显示可建造区域（绿色/红色）
+3. 点击确认 → 消耗资源 → 标记挖掘区域
+4. 工蚁自动前往挖掘 → 挖掘进度条 0-100%
+5. 建造完成 → 房间激活 → 效果生效
 
-## 5. 数据模型
+### 4.5 生物群落系统 (BiomeSystem)
 
-### 5.1 数据模型定义
+**四种生物群落配置**：
+
+| 群落 | 地表色调 | 食物丰度 | 敌人类型 | 特殊机制 |
+|-----|---------|---------|---------|---------|
+| 森林 | 深绿 | 1.2x | 蜘蛛、甲虫 | 雨季洪水 |
+| 沙漠 | 沙黄 | 0.6x | 蝎子、蜥蜴 | 昼夜温差，干旱 |
+| 草原 | 草绿 | 0.9x | 食蚁兽、鸟 | 大风，野火 |
+| 雨林 | 墨绿 | 1.5x | 行军蚁、寄生蜂 | 高湿度，疾病 |
+
+**地图生成器扩展**：
+- 根据生物群落类型调整地形生成算法
+- 食物源类型和分布随群落变化
+- 敌人类型池和出现概率差异化
+- 地表装饰物（树木/仙人掌/草丛）符合群落特色
+
+### 4.6 对战模式系统 (BattleSystem)
+
+**游戏规则**：
+- 两名玩家各控制一个蚁群
+- 地图两侧各有一个初始巢穴入口
+- 胜利条件：消灭对方蚁后
+- 领地控制：蚂蚁活动范围决定领地边界
+- 资源争夺：地图中央食物源为兵家必争之地
+
+**操作模式**：
+- 轮流操作：计时器控制，每玩家30秒操作时间
+- 分屏操作：左右分屏，各显示己方蚁群状态
+- 快捷键：玩家1使用WASD+空格，玩家2使用方向键+回车
+
+**特殊对战机制**：
+- 侦察：可派遣工蚁探索对方领地
+- 偷袭：兵蚁可潜入对方巢穴破坏
+- 间谍：繁殖蚁可混入对方蚁群
+- 结盟：可选规则，可临时结盟对抗AI
+
+## 5. 数据模型扩展
+
+### 5.1 新增数据结构
 
 ```mermaid
 erDiagram
-    "蚁群" ||--o{ "蚂蚁" : "包含"
-    "蚁群" ||--o| "资源" : "拥有"
-    "蚁群" ||--o{ "卵" : "拥有"
-    "蚁群" ||--|| "巢穴地图" : "占据"
+    "蚁群" ||--o{ "信息素地图" : "拥有"
+    "蚁群" ||--o| "基因属性" : "拥有"
+    "蚁群" ||--o{ "房间" : "拥有"
+    "蚁群" ||--o| "季节状态" : "受影响"
+    "信息素地图" {
+        "number[][] foraging 觅食信息素"
+        "number[][] alarm 警戒信息素"
+        "number[][] homing 归巢信息素"
+    }
+    "基因属性" {
+        "number speed 速度等级"
+        "number strength 力量等级"
+        "number diseaseResist 抗病等级"
+        "number capacity 载重等级"
+        "number reproduction 繁殖等级"
+        "number genePoints 可用基因点"
+    }
+    "房间" {
+        "string id"
+        "string type 类型"
+        "number gridX"
+        "number gridY"
+        "number width"
+        "number height"
+        "number buildProgress 建造进度"
+        "bool active 是否激活"
+    }
+    "季节状态" {
+        "string currentSeason 春夏秋冬"
+        "number dayInSeason 季节内天数"
+        "string upcomingDisaster 预警灾害"
+        "number disasterCountdown 灾害倒计时"
+        "number activeDisaster 活跃灾害"
+    }
+    "生物群落配置" {
+        "string id"
+        "string name"
+        "string[] foodTypes"
+        "string[] enemyTypes"
+        "object modifiers 属性修正"
+    }
+```
+
+### 5.2 扩展数据模型
+
+```mermaid
+erDiagram
     "蚂蚁" {
         "string id PK"
-        "string type 工蚁/兵蚁/蚁后"
+        "string type 工蚁/兵蚁/蚁后/繁殖蚁"
         "number x"
         "number y"
-        "string state 空闲/觅食/挖掘/战斗/照顾"
+        "string state"
         "number health"
         "number hunger"
-        "string targetId 目标ID"
+        "number thirst 新增：口渴值"
+        "number geneBonus 基因加成系数"
+        "number level 个体等级"
+        "bool isSick 是否生病"
+        "string targetId"
     }
     "资源" {
         "number food"
-        "number foodRate 食物变化率"
-    }
-    "卵" {
-        "string id PK"
-        "string stage 卵/幼虫/蛹"
-        "number timer 阶段倒计时"
-    }
-    "巢穴地图" {
-        "string[][] grid 网格数据"
-        "number width"
-        "number height"
-    }
-    "外敌" {
-        "string id PK"
-        "string type 蜘蛛/敌对蚁"
-        "number x"
-        "number y"
-        "number health"
-        "number attack"
+        "number maxFood"
+        "number water 新增：水"
+        "number maxWater 新增：最大水"
+        "number material 新增：材料"
+        "number maxMaterial 新增：最大材料"
+        "number foodRate"
+        "number waterRate"
     }
 ```
 
-## 6. 项目目录结构
+## 6. 项目目录结构（扩展）
 
 ```
 src/
-├── main.ts                    # 应用入口
-├── App.vue                    # 根组件
-├── assets/
-│   └── styles/
-│       └── main.css           # 全局样式
+├── main.ts
+├── App.vue
+├── assets/styles/
 ├── game/
-│   ├── GameLoop.ts            # 游戏主循环
-│   ├── Ant.ts                 # 蚂蚁类（AI行为、移动）
-│   ├── Enemy.ts               # 外敌类
-│   ├── Colony.ts              # 蚁群管理器
-│   ├── MapGenerator.ts        # 地图/巢穴生成
-│   ├── CombatSystem.ts        # 战斗系统
-│   ├── ReproductionSystem.ts  # 繁殖系统
-│   └── ResourceManager.ts     # 资源管理
+│   ├── GameLoop.ts
+│   ├── Ant.ts
+│   ├── Enemy.ts
+│   ├── Colony.ts
+│   ├── MapGenerator.ts
+│   ├── CombatSystem.ts
+│   ├── ReproductionSystem.ts
+│   ├── ResourceManager.ts
+│   ├── PheromoneSystem.ts       # 新增：信息素系统
+│   ├── SeasonSystem.ts          # 新增：季节灾害系统
+│   ├── GeneSystem.ts            # 新增：基因进化系统
+│   ├── BuildSystem.ts           # 新增：蚁巢建造系统
+│   ├── BiomeSystem.ts           # 新增：生物群落系统
+│   └── BattleSystem.ts          # 新增：对战模式系统
 ├── renderer/
-│   ├── CanvasRenderer.ts      # Canvas渲染引擎
-│   ├── AntRenderer.ts         # 蚂蚁渲染
-│   ├── MapRenderer.ts         # 地图渲染
-│   ├── UIRenderer.ts          # 游戏内UI渲染（选中框等）
-│   └── ParticleSystem.ts      # 粒子效果系统
+│   ├── CanvasRenderer.ts
+│   ├── ParticleSystem.ts
+│   ├── PheromoneRenderer.ts     # 新增：信息素渲染
+│   ├── SeasonRenderer.ts        # 新增：季节效果渲染
+│   └── UIRenderer.ts
 ├── stores/
-│   └── gameStore.ts           # Pinia游戏状态仓库
+│   └── gameStore.ts
 ├── components/
-│   ├── GameCanvas.vue         # 游戏画布组件
-│   ├── StatusPanel.vue        # 状态面板组件
-│   ├── AntDetail.vue          # 蚂蚁详情弹窗
-│   └── SpeedControl.vue       # 速度控制组件
+│   ├── GameCanvas.vue
+│   ├── StatusPanel.vue
+│   ├── AntDetail.vue
+│   ├── SpeedControl.vue
+│   ├── GenePanel.vue            # 新增：基因进化面板
+│   ├── BuildPanel.vue           # 新增：建造面板
+│   ├── SeasonIndicator.vue      # 新增：季节指示器
+│   ├── BiomeSelect.vue          # 新增：生物群落选择
+│   ├── MainMenu.vue             # 新增：主菜单
+│   └── BattleUI.vue             # 新增：对战UI
+├── data/
+│   ├── biomes.ts                # 新增：生物群落配置
+│   ├── rooms.ts                 # 新增：房间类型配置
+│   └── disasters.ts             # 新增：灾害配置
 └── utils/
-    ├── constants.ts           # 游戏常量配置
-    └── helpers.ts             # 工具函数
+    ├── constants.ts
+    └── helpers.ts
 ```
+
+## 7. 性能优化策略
+
+1. **信息素系统优化**：
+   - 分区域更新，仅更新有蚂蚁活动的区域
+   - 每 5 帧更新一次信息素扩散
+   - 使用类型化数组 `Float32Array` 存储信息素数据
+
+2. **渲染优化**：
+   - 信息素可视化使用离屏 Canvas 预渲染
+   - 季节色彩叠加使用 CSS filter，避免 Canvas 重绘
+  - 仅渲染视口内的元素
+
+3. **AI 优化**：
+   - 蚂蚁 AI 分批次更新，每帧更新 1/3 的蚂蚁
+   - 使用空间分区网格加速碰撞检测和敌人搜索
+   - 信息素感知使用邻域查找，避免全地图遍历
+
+4. **对战模式优化**：
+   - 双蚁群逻辑并行更新（使用 `Promise.all`）
+   - 独立的状态快照，支持回退和复盘
+   - 输入事件队列化，确保操作顺序正确
+
+## 8. 兼容性说明
+
+- 所有 V2.0 新功能均为增量添加，不破坏原有功能
+- 单人模式保持原有操作习惯，新功能通过菜单渐进解锁
+- 对战模式为可选模式，不影响单人模式体验
+- 所有新增资源（水/材料）在单人模式下有合理的获取途径

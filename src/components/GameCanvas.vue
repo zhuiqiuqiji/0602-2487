@@ -1,5 +1,5 @@
 <template>
-  <div class="game-canvas-container">
+  <div class="game-canvas-container" :class="{ 'build-mode': store.buildMode !== null }">
     <canvas ref="canvasRef"></canvas>
     <div class="view-toggle">
       <button
@@ -21,9 +21,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
-import { ViewMode } from '@/utils/constants'
+import { ViewMode, CELL_SIZE } from '@/utils/constants'
+import type PheromoneSystem from '@/game/PheromoneSystem'
+import type SeasonSystem from '@/game/SeasonSystem'
+import type BuildSystem from '@/game/BuildSystem'
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const store = useGameStore()
@@ -45,6 +48,27 @@ const switchView = (mode: ViewMode) => {
   store.setViewMode(mode)
 }
 
+const handleMouseMove = (event: MouseEvent) => {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  const rect = canvas.getBoundingClientRect()
+  const scaleX = canvas.width / rect.width
+  const scaleY = canvas.height / rect.height
+  const worldX = (event.clientX - rect.left) * scaleX
+  const worldY = (event.clientY - rect.top) * scaleY
+  store.renderer?.setHoverPosition(worldX, worldY)
+}
+
+const handleMouseLeave = () => {
+  store.renderer?.setHoverPosition(null)
+}
+
+watch(() => store.buildMode, (buildMode) => {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  canvas.style.cursor = buildMode !== null ? 'cell' : 'crosshair'
+}, { immediate: true })
+
 onMounted(() => {
   const canvas = canvasRef.value
   const container = canvas?.parentElement
@@ -56,6 +80,17 @@ onMounted(() => {
   store.initGame(canvas)
 
   canvas.addEventListener('click', handleClick)
+  canvas.addEventListener('mousemove', handleMouseMove)
+  canvas.addEventListener('mouseleave', handleMouseLeave)
+
+  if (store.colony) {
+    store.renderer?.setSystems(
+      store.colony.pheromoneSystem as unknown as PheromoneSystem,
+      store.colony.seasonSystem as unknown as SeasonSystem,
+      store.colony.buildSystem as unknown as BuildSystem
+    )
+    store.renderer?.setBiome(store.colony.biome)
+  }
 
   resizeObserver = new ResizeObserver(() => {
     canvas.width = container.clientWidth
@@ -68,6 +103,8 @@ onUnmounted(() => {
   const canvas = canvasRef.value
   if (canvas) {
     canvas.removeEventListener('click', handleClick)
+    canvas.removeEventListener('mousemove', handleMouseMove)
+    canvas.removeEventListener('mouseleave', handleMouseLeave)
   }
   if (resizeObserver) {
     resizeObserver.disconnect()
@@ -91,6 +128,10 @@ canvas {
   width: 100%;
   height: 100%;
   cursor: crosshair;
+}
+
+.build-mode :deep(canvas) {
+  cursor: cell;
 }
 
 .view-toggle {

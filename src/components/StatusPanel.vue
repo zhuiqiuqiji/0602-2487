@@ -104,6 +104,10 @@ const statusMap: Record<ColonyStatus, { color: string; text: string }> = {
   [ColonyStatus.NORMAL]: { color: '#FFC107', text: '正常' },
   [ColonyStatus.HUNGRY]: { color: '#FF9800', text: '饥饿' },
   [ColonyStatus.DANGER]: { color: '#F44336', text: '危险' },
+  [ColonyStatus.DISEASED]: { color: '#9C27B0', text: '疾病' },
+  [ColonyStatus.HIBERNATING]: { color: '#607D8B', text: '冬眠' },
+  [ColonyStatus.FLOODED]: { color: '#2196F3', text: '洪水' },
+  [ColonyStatus.DROUGHT]: { color: '#FF5722', text: '干旱' },
 }
 
 const statusColor = computed(() => statusMap[store.colonyStatus]?.color ?? '#FFC107')
