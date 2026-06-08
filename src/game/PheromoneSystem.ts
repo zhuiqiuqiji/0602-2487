@@ -1,3 +1,4 @@
+import type { PheromoneMap } from '@/utils/constants'
 import {
   PheromoneType,
   PHEROMONE_DECAY_RATE,
@@ -7,7 +8,6 @@ import {
   SURFACE_COLS,
   SURFACE_ROWS,
   CELL_SIZE,
-  type PheromoneMap,
 } from '@/utils/constants'
 import { clamp } from '@/utils/helpers'
 
@@ -160,7 +160,7 @@ export default class PheromoneSystem {
     this.map.homing.fill(0)
   }
 
-  private getIndex(gx: number, gy: number): number {
+  getIndex(gx: number, gy: number): number {
     return gy * this.map.width + gx
   }
 }

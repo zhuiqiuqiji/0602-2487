@@ -1,13 +1,10 @@
+import type { Ant, Enemy, Egg, FoodSource } from '@/utils/constants'
 import {
   CellType,
   AntType,
   AntState,
-  type Ant,
-  type Enemy,
   EnemyType,
   EggStage,
-  type Egg,
-  type FoodSource,
   ViewMode,
   CELL_SIZE,
   NEST_COLS,

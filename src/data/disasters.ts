@@ -1,4 +1,5 @@
-import { DisasterType, Season, type DisasterConfig } from '@/utils/constants'
+import type { DisasterConfig } from '@/utils/constants'
+import { DisasterType, Season } from '@/utils/constants'
 
 export const DISASTERS: DisasterConfig[] = [
   {

@@ -1,4 +1,5 @@
-import { BiomeType, EnemyType, SURFACE_COLS, SURFACE_ROWS, CELL_SIZE, type FoodSource, type DisasterType } from '@/utils/constants'
+import type { FoodSource, DisasterType } from '@/utils/constants'
+import { BiomeType, EnemyType, SURFACE_COLS, SURFACE_ROWS, CELL_SIZE } from '@/utils/constants'
 import { BIOMES, getBiomeConfig } from '@/data/biomes'
 import { generateId, randomRange, randomInt } from '@/utils/helpers'
 

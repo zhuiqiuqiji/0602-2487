@@ -2,9 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import Colony from '@/game/Colony'
 import CanvasRenderer from '@/renderer/CanvasRenderer'
-import type PheromoneSystem from '@/game/PheromoneSystem'
-import type SeasonSystem from '@/game/SeasonSystem'
-import type BuildSystem from '@/game/BuildSystem'
 import ParticleSystem from '@/renderer/ParticleSystem'
 import {
   ViewMode,
@@ -91,9 +88,9 @@ export const useGameStore = defineStore('game', () => {
     colony.value = new Colony()
     renderer.value = new CanvasRenderer(canvas)
     renderer.value.setSystems(
-      colony.value.pheromoneSystem as PheromoneSystem,
-      colony.value.seasonSystem as SeasonSystem,
-      colony.value.buildSystem as BuildSystem,
+      colony.value.pheromoneSystem,
+      colony.value.seasonSystem,
+      colony.value.buildSystem,
     )
     renderer.value.setBiome(colony.value.biome)
     isRunning.value = true
@@ -118,7 +115,7 @@ export const useGameStore = defineStore('game', () => {
     renderer.value.setBiome(colony.value.biome)
 
     particles.value.update(dt * speedMultiplier)
-    renderer.value.render(colony.value as Colony)
+    renderer.value.render(colony.value)
     particles.value.render(renderer.value.ctx)
 
     requestAnimationFrame(gameLoop)
@@ -257,9 +254,9 @@ export const useGameStore = defineStore('game', () => {
       colony.value = new Colony(biome)
       if (renderer.value) {
         renderer.value.setSystems(
-          colony.value.pheromoneSystem as PheromoneSystem,
-          colony.value.seasonSystem as SeasonSystem,
-          colony.value.buildSystem as BuildSystem,
+          colony.value.pheromoneSystem,
+          colony.value.seasonSystem,
+          colony.value.buildSystem,
         )
         renderer.value.setBiome(colony.value.biome)
         isRunning.value = true

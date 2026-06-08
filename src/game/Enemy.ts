@@ -1,6 +1,6 @@
+import type { Enemy } from '@/utils/constants'
 import {
   EnemyType,
-  type Enemy,
   SPIDER_HEALTH,
   SPIDER_ATTACK,
   SPIDER_SPEED,

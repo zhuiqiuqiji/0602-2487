@@ -1,7 +1,7 @@
+import type { Ant } from '@/utils/constants'
 import {
   AntType,
   AntState,
-  type Ant,
   WORKER_SPEED,
   SOLDIER_SPEED,
   WORKER_HEALTH,

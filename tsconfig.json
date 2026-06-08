@@ -7,6 +7,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": false,
+    "verbatimModuleSyntax": true,
     "baseUrl": "./",
     "paths": {
       "@/*": [

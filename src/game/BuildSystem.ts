@@ -1,4 +1,5 @@
-import { RoomType, CellType, MATERIAL_FROM_DIGGING, CELL_SIZE, AntType, AntState, type Room, type RoomConfig } from '@/utils/constants'
+import type { Room, RoomConfig } from '@/utils/constants'
+import { RoomType, CellType, MATERIAL_FROM_DIGGING, CELL_SIZE, AntType, AntState } from '@/utils/constants'
 import { getRoomConfig, canUnlockRoom } from '@/data/rooms'
 import { generateId, distance } from '@/utils/helpers'
 

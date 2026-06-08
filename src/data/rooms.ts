@@ -1,4 +1,5 @@
-import { RoomType, CellType, type RoomConfig } from '@/utils/constants'
+import type { RoomConfig } from '@/utils/constants'
+import { RoomType, CellType } from '@/utils/constants'
 
 export const ROOMS: RoomConfig[] = [
   {

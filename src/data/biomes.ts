@@ -1,4 +1,5 @@
-import { BiomeType, EnemyType, DisasterType, type BiomeConfig } from '@/utils/constants'
+import type { BiomeConfig } from '@/utils/constants'
+import { BiomeType, EnemyType, DisasterType } from '@/utils/constants'
 
 export const BIOMES: BiomeConfig[] = [
   {

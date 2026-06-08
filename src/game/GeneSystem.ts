@@ -1,3 +1,4 @@
+import type { GeneStats } from '@/utils/constants'
 import {
   GeneType,
   GENE_LEVEL_MAX,
@@ -8,7 +9,6 @@ import {
   INITIAL_GENE_DISEASE_RESIST,
   INITIAL_GENE_CAPACITY,
   INITIAL_GENE_REPRODUCTION,
-  type GeneStats,
 } from '@/utils/constants'
 
 export default class GeneSystem {

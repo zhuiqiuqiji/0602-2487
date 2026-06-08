@@ -1,11 +1,9 @@
+import type { Egg, FoodSource, GameEvent } from '@/utils/constants'
 import {
   AntType,
   AntState,
-  type Egg,
   EggStage,
   EnemyType,
-  type FoodSource,
-  type GameEvent,
   ColonyStatus,
   ViewMode,
   GameSpeed,

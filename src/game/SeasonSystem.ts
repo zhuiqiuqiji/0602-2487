@@ -1,11 +1,10 @@
+import type { SeasonState, DisasterConfig } from '@/utils/constants'
 import {
   Season,
   DisasterType,
   SEASON_DURATION,
   SEASON_TRANSITION_DURATION,
   DISASTER_WARNING_TIME,
-  type SeasonState,
-  type DisasterConfig,
 } from '@/utils/constants'
 import { DISASTERS, getDisasterConfig } from '@/data/disasters'
 import { randomRange } from '@/utils/helpers'
